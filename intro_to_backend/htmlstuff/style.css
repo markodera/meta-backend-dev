@@ -1,0 +1,14 @@
+h1{
+    background-color: gray;
+    color: blue;
+    /* margin-top: 1px;
+    margin-left: 2px;
+    margin-right: 2px ; */
+
+}
+h2:hover{
+    color: orange;
+}
+p.intro {
+    color: violet;
+}
