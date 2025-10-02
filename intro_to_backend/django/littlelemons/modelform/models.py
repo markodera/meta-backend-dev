@@ -1,7 +1,15 @@
 from django.db import models
-
+from django.contrib.auth.models import AbstractUser
 # Create your models here.
 
+
+#Class for signup and login
+class CustomUser(AbstractUser):
+    email = models.EmailField(
+        blank=False, null= False, unique=True, verbose_name="Email Address"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 # test data for modelform practice
 class Test(models.Model):
     name = models.CharField(max_length=100)

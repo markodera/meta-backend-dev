@@ -1,0 +1,4 @@
+pipenv install djangorestframework-xml
+Django Field Lookups
+Django filter
+pip install django-filter
