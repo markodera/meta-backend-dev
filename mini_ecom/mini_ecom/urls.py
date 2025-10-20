@@ -1,5 +1,5 @@
 """
-URL configuration for LittleLemons project.
+URL configuration for mini_ecom project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.2/topics/http/urls/
@@ -15,14 +15,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
-from rest_framework_simplejwt.views import TokenObtainPairView,  TokenRefreshView, TokenBlacklistView
+from django.urls import path, include, re_path
+from rest_framework.authtoken import views
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    path("api/", include("LittlelemonAPI.urls")),
-    path("auth/", include("djoser.urls")),
-    path("auth/", include("djoser.urls.authtoken")),
-    # path("api/token/", TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    # path("api/token/refresh/", TokenRefreshView.as_view(), name='token_refresh'),
-    # path("api/token/blacklist/", TokenBlacklistView.as_view(), name='token_blacklist')
+    path('admin/', admin.site.urls),
+    path('api/accounts/', include('accounts.urls')),
+    path('api-token-auth/', views.obtain_auth_token)
 ]
+
+

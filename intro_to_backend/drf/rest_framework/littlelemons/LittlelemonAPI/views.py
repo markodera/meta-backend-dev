@@ -1,36 +1,42 @@
 from rest_framework import generics
 from .models import MenuItem, Category
 from . serializers import MenuItemSerilaizer, CategorySerializer
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
+from .throttle import TenCallsPerMinute
 from django.shortcuts import get_object_or_404
-from rest_framework import status
+from rest_framework import status 
 from django.core.paginator import Paginator, EmptyPage
+from rest_framework.permissions import IsAdminUser
+from django.contrib.auth.models import User, Group
 # Create your views here.
 # class based view
 
 class MenuItemView(generics.ListCreateAPIView):
     queryset = MenuItem.objects.all()
     serializer_class = MenuItemSerilaizer
+    throttle_classes= [AnonRateThrottle, UserRateThrottle]
     ordering_fields=['price', 'inventory']
     search_fields = ['title','category__title']
-    def get_queryset(self):
+    # def get_queryset(self):
 
-        queryset = MenuItem.objects.select_related('category').all()
-        category_name = self.request.query_params.get('category')
-        to_price = self.request.query_params.get('to_price')
-        search = self.request.query_params.get('search')
-        # ordering = self.request.query_params.get('ordering')
-        if category_name:
-            queryset = queryset.filter(category__title=category_name)
-        if to_price:
-            queryset = queryset.filter(price__lte=to_price)
-        if search :
-            queryset = queryset.filter(title__startswith=search)       
-        # if ordering:
-        #     ordering_fields = ordering.split(",")
-        #     queryset = queryset.order_by(*ordering_fields)
-        return queryset
+    #     queryset = MenuItem.objects.select_related('category').all()
+    #     category_name = self.request.query_params.get('category')
+    #     to_price = self.request.query_params.get('to_price')
+    #     search = self.request.query_params.get('search')
+    #     # ordering = self.request.query_params.get('ordering')
+    #     if category_name:
+    #         queryset = queryset.filter(category__title=category_name)
+    #     if to_price:
+    #         queryset = queryset.filter(price__lte=to_price)
+    #     if search :
+    #         queryset = queryset.filter(title__startswith=search)       
+    #     # if ordering:
+    #     #     ordering_fields = ordering.split(",")
+    #     #     queryset = queryset.order_by(*ordering_fields)
+    #     return queryset
 
 class SingleMenuItemView(generics.RetrieveUpdateDestroyAPIView):
     queryset = MenuItem.objects.all()
@@ -102,3 +108,41 @@ class SingleCategoryView(generics.RetrieveUpdateDestroyAPIView):
 #     item = get_object_or_404(MenuItem, pk=id)
 #     serializer_item = MenuItemSerilaizer(item)
 #     return Response(serializer_item.data)
+@api_view()
+@permission_classes([IsAuthenticated])
+def secret(request):
+    return Response({"message":"Some secret message"})
+
+@api_view()
+@permission_classes([IsAuthenticated])
+def manager_view(request):
+    if request.user.groups.filter(name="Manager").exists():
+        return Response({"message":"Only managers should see this"})
+    else:
+        return Response({"message":"You are not authorized"}, 403)
+    
+@api_view()
+@throttle_classes([AnonRateThrottle])
+def throttle_check(request):
+    return Response({"message":"succsesful"})
+
+@api_view()
+@permission_classes([IsAuthenticated])
+@throttle_classes([TenCallsPerMinute])
+def throttle_check_auth(request):
+    return Response({"message":"message for logged in users only"})
+
+@api_view(['POST', 'DELETE'])
+@permission_classes([IsAdminUser])
+def managers(request):
+    username = request.data['username']
+    if username:
+        user = get_object_or_404(User, username=username)
+        managers = Group.objects.get(name="Manager")
+        if request.method == 'POST':
+            managers.user_set.add(user)
+        elif request.method == 'DELETE':
+            managers.user_set.remove(user)
+        return Response ({"message":"ok"})
+    
+    return Response({"message":"error"}, status.HTTP_400_BAD_REQUEST)

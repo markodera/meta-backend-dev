@@ -1,3 +1,8 @@
 {
-    "git.ignoreLimitWarning": false
+  "github.copilot.chat.codeGeneration.instructions": [
+    {
+      "file": "general.instructions.md"
+    },
+   
+  ]
 }

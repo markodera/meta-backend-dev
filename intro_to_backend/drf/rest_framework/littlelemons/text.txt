@@ -2,3 +2,4 @@ pipenv install djangorestframework-xml
 Django Field Lookups
 Django filter
 pip install django-filter
+pip install djangorestframework-simplejwt~=5.2.1
